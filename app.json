@@ -56,6 +56,10 @@
       }
     }
   },
+  "bugs": {
+    "url": "https://github.com/ricott/homey-se.trafikverket.vader/issues"
+  },
+  "source": "https://github.com/ricott/homey-se.trafikverket.vader",
   "capabilities": {
     "wind_angle_text": {
       "type": "string",
