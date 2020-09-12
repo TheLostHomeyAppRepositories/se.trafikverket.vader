@@ -1,0 +1,39 @@
+{
+    "pair": {
+        "title": "Add weather station",
+        "msg1": "Either search for a station by name below, or leave the field empty and stations close (20km) to your Homeys location will be displayed.",
+        "msg2": "The field below is a search field and you only need to type the beginning of the station name.",
+        "station": "Station name",
+        "button": "Next >"
+    },
+    "precipitation": {
+        "error": "Error",
+        "light_rain": "Light rain",
+        "moderate_rain": "Moderate rain",
+        "heavy_rain": "Heavy rain",
+        "light_snow_rain": "Light snow mixed rain",
+        "moderate_snow_rain": "Moderate snow mixed rain",
+        "heavy_snow_rain": "Heavy snow mixed rain",
+        "light_snow": "Light snowfall",
+        "moderate_snow": "Moderate snowfall",
+        "heavy_snow": "Heavy snowfall",
+        "other": "Other precipitation",
+        "none": "No precipitation",
+        "unknown": "Unknown precipitation"
+    },
+    "wind": {
+        "east": "East",
+        "nort_east": "Northeast",
+        "east_south_east": "East, southeast",
+        "north": "North",
+        "nort_north_east": "North, northeast",
+        "nort_north_west": "North, northwest",
+        "nort_west": "Nortwest",
+        "south": "South",
+        "south_east": "Southeast",
+        "south_south_west": "South, southwest",
+        "south_west": "Southwest",
+        "west": "West"
+    }
+
+}

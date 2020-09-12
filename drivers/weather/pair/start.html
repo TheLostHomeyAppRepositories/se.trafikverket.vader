@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+
+<head>
+    <script type="text/javascript">
+        Homey.setTitle(__('pair.title'));
+        $(function () {
+            $('#next').click(function () {
+                var stationName = $('#stationName').val();
+                var settings = {
+                    stationName: stationName
+                };
+                Homey.emit('settings', settings, function (err, result) {
+                    console.log(result);
+                });
+            });
+        })
+    </script>
+</head>
+
+<body>
+    <p data-i18n="pair.msg1"></p>
+    <br/>
+    <p data-i18n="pair.msg2"></p>
+    <br/><br/>
+    <div>
+        <div>
+            <label for="stationName" data-i18n="pair.station"></label>
+            <input type="text" id="stationName">
+        </div>
+        <div><br/></div>
+        <div>
+            <button id="next" class="button" data-i18n="pair.button"></button>
+        </div>
+    </div>
+</body>
+
+</html>

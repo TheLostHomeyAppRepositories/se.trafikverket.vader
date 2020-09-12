@@ -1,0 +1,38 @@
+{
+    "pair": {
+        "title": "Lägg till en väderstation",
+        "msg1": "Antingen använder du sökfältet nedan för att söka fram en station, eller så lämnar du fältet tomt och då kommer väderstationer som är nära (inom 20km) från din Homey att visas.",
+        "msg2": "Fältet nedan är ett sökfält, du behöver bara ange början av det du vill söka på.",
+        "station": "Stationsnamn",
+        "button": "Nästa >"
+    },
+    "precipitation": {
+        "error": "Givare saknas/Fel på givare",
+        "light_rain": "Lätt regn",
+        "moderate_rain": "Måttligt regn",
+        "heavy_rain": "Kraftigt regn",
+        "light_snow_rain": "Lätt snöblandat regn",
+        "moderate_snow_rain": "Måttligt snöblandat regn",
+        "heavy_snow_rain": "Kraftigt snöblandat regn",
+        "light_snow": "Lätt snöfall",
+        "moderate_snow": "Måttligt snöfall",
+        "heavy_snow": "Kraftigt snöfall",
+        "other": "Annan nederbördstyp",
+        "none": "Ingen nederbörd",
+        "unknown": "Okänd nederbördstyp"
+    },
+    "wind": {
+        "east": "Öst",
+        "nort_east": "Nordöst",
+        "east_south_east": "Östsydöst",
+        "north": "Norr",
+        "nort_north_east": "Nordnordöst",
+        "nort_north_west": "Nordnordväst",
+        "nort_west": "Nordväst",
+        "south": "Söder",
+        "south_east": "Sydöst",
+        "south_south_west": "Sydsydväst",
+        "south_west": "Sydväst",
+        "west": "Väst"
+    }
+}

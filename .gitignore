@@ -1,0 +1,14 @@
+# Optional npm cache directory
+.npm
+
+# With Homey cli added node_modules becomes as mess
+node_modules
+
+# OS stuff
+.DS_Store
+
+#Secret environment variables
+/env.json
+
+#Credentials used for mocha tests
+/test/config.js
