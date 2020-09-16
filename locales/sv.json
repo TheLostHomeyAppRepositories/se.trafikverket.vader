@@ -7,7 +7,7 @@
         "button": "Nästa >"
     },
     "precipitation": {
-        "error": "Givare saknas/Fel på givare",
+        "error": "Fel på givare",
         "light_rain": "Lätt regn",
         "moderate_rain": "Måttligt regn",
         "heavy_rain": "Kraftigt regn",
@@ -22,6 +22,7 @@
         "unknown": "Okänd nederbördstyp"
     },
     "wind": {
+        "error": "Fel på givare",
         "east": "Öst",
         "nort_east": "Nordöst",
         "east_south_east": "Östsydöst",

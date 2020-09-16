@@ -58,16 +58,36 @@ class WeatherDevice extends Homey.Device {
         self.weather.api.getWeatherStationDetails(self.weather.id)
             .then(function (message) {
                 let status = message.RESPONSE.RESULT[0].WeatherStation[0];
-                self._updateProperty('measure_temperature', status.Measurement.Air.Temp);
-                self._updateProperty('measure_humidity', status.Measurement.Air.RelativeHumidity);
-                self._updateProperty('measure_wind_strength', status.Measurement.Wind.Force);
-                self._updateProperty('measure_wind_angle', status.Measurement.Wind.Direction);
+                let sensorErrorTag = 'Givare saknas/Fel på givare';
+                let airTemp = 0, airHum = 0;
+                if (status.Measurement.Air) {
+                    airTemp = status.Measurement.Air.Temp || 0;
+                    airHum = status.Measurement.Air.RelativeHumidity || 0;
+                }
+                self._updateProperty('measure_temperature', airTemp);
+                self._updateProperty('measure_humidity', airHum);
+                let windForce = 0, windForceMax = 0, windAngle = 0;
+                let windDirText = sensorErrorTag;
+                if (status.Measurement.Wind) {
+                    windForce = status.Measurement.Wind.Force || 0;
+                    windForceMax = status.Measurement.Wind.ForceMax || 0;
+                    windAngle = status.Measurement.Wind.Direction || 0;
+                    windDirText = status.Measurement.Wind.DirectionText || sensorErrorTag;
+                }
+                self._updateProperty('measure_wind_strength', windForce);
+                self._updateProperty('measure_gust_strength', windForceMax);
+                self._updateProperty('measure_wind_angle', windAngle);
                 self._updateProperty('wind_angle_text',
-                    self.homey.__(enums.decodeWindDirection(status.Measurement.Wind.DirectionText)));
-                self._updateProperty('measure_gust_strength', status.Measurement.Wind.ForceMax);
-                self._updateProperty('measure_rain', status.Measurement.Precipitation.Amount || 0);
+                    self.homey.__(enums.decodeWindDirection(windDirText)));
+                let precipitationAmount = 0;
+                let precipitationAmountName = sensorErrorTag;
+                if (status.Measurement.Precipitation) {
+                    precipitationAmount = status.Measurement.Precipitation.Amount || 0;
+                    precipitationAmountName = status.Measurement.Precipitation.AmountName || sensorErrorTag;
+                }
+                self._updateProperty('measure_rain', precipitationAmount);
                 self._updateProperty('precipitation_type',
-                    self.homey.__(enums.decodePrecipitationName(status.Measurement.Precipitation.AmountName)));
+                    self.homey.__(enums.decodePrecipitationName(precipitationAmountName)));
 
                 self.setSettings({
                     last_response: JSON.stringify(status, null, "  ")

@@ -1,4 +1,8 @@
 {
+  "0.9.1": {
+    "en": "Solved bug with incomplete API response",
+    "sv": "Löst problemet med icke komplett API svar"
+  },
   "0.9.0": {
     "en": "Inital version",
     "sv": "Första versionen"
