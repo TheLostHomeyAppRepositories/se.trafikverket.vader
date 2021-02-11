@@ -6,35 +6,22 @@
         "station": "Station name",
         "button": "Next >"
     },
-    "precipitation": {
-        "error": "Error",
-        "light_rain": "Light rain",
-        "moderate_rain": "Moderate rain",
-        "heavy_rain": "Heavy rain",
-        "light_snow_rain": "Light snow mixed rain",
-        "moderate_snow_rain": "Moderate snow mixed rain",
-        "heavy_snow_rain": "Heavy snow mixed rain",
-        "light_snow": "Light snowfall",
-        "moderate_snow": "Moderate snowfall",
-        "heavy_snow": "Heavy snowfall",
-        "other": "Other precipitation",
-        "none": "No precipitation",
-        "unknown": "Unknown precipitation"
-    },
     "wind": {
-        "error": "Error",
-        "east": "East",
-        "nort_east": "Northeast",
-        "east_south_east": "East, southeast",
-        "north": "North",
-        "nort_north_east": "North, northeast",
-        "nort_north_west": "North, northwest",
-        "nort_west": "Nortwest",
-        "south": "South",
-        "south_east": "Southeast",
-        "south_south_west": "South, southwest",
-        "south_west": "Southwest",
-        "west": "West"
+        "E": "East",
+        "NE": "Northeast",
+        "ESE": "East, southeast",
+        "ENE": "East, northeast",
+        "N": "North",
+        "NNE": "North, northeast",
+        "NNW": "North, northwest",
+        "NW": "Nortwest",
+        "S": "South",
+        "SE": "Southeast",
+        "SSW": "South, southwest",
+        "SSE": "South, southeast",
+        "SW": "Southwest",
+        "W": "West",
+        "WSW": "West, southwest",
+        "WNW": "West, northwest"
     }
-
 }

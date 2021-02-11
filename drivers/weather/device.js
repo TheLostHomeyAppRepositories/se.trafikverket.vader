@@ -1,8 +1,8 @@
 'use strict';
 
 const Homey = require('homey');
+const util = require('util');
 const Trafikverket = require('../../lib/tv_api.js');
-const enums = require('../../lib/enums.js');
 
 class WeatherDevice extends Homey.Device {
 
@@ -17,11 +17,34 @@ class WeatherDevice extends Homey.Device {
             name: this.getName(),
         };
 
+        this.setupCapabilities();
+
         this.weather.api = new Trafikverket({ token: Homey.env.API_KEY });
         this.refreshWeatherSiteStatus();
 
         this._initilializeTimers();
         this._initializeEventListeners();
+    }
+
+    setupCapabilities() {
+        this.log('Setting up capabilities');
+
+        let capability = 'precipitation_type';
+        if (this.hasCapability(capability)) {
+            this.log(`Remove existing capability '${capability}'`);
+            this.removeCapability(capability);
+        }
+
+        capability = 'measure_rain.snow';
+        if (!this.hasCapability(capability)) {
+            this.log(`Adding missing capability '${capability}'`);
+            this.addCapability(capability);
+        }
+        capability = 'measure_rain.total';
+        if (!this.hasCapability(capability)) {
+            this.log(`Adding missing capability '${capability}'`);
+            this.addCapability(capability);
+        }
     }
 
     _initializeEventListeners() {
@@ -53,44 +76,40 @@ class WeatherDevice extends Homey.Device {
         return (err && err.stack && err.message);
     }
 
+    //New API use new id format, this is to be backwards compatible
+    getStationId() {
+        if (isNaN(this.weather.id)) {
+            return this.weather.id.substring(11);
+        } else {
+            return this.weather.id;
+        }
+    }
+
     refreshWeatherSiteStatus() {
         let self = this;
-        self.weather.api.getWeatherStationDetails(self.weather.id)
+        self.weather.api.getWeatherStationDetails(self.getStationId())
             .then(function (message) {
-                let status = message.RESPONSE.RESULT[0].WeatherStation[0];
-                let sensorErrorTag = 'Givare saknas/Fel på givare';
-                let airTemp = 0, airHum = 0;
-                if (status.Measurement.Air) {
-                    airTemp = status.Measurement.Air.Temp || 0;
-                    airHum = status.Measurement.Air.RelativeHumidity || 0;
-                }
-                self._updateProperty('measure_temperature', airTemp);
-                self._updateProperty('measure_humidity', airHum);
-                let windForce = 0, windForceMax = 0, windAngle = 0;
-                let windDirText = sensorErrorTag;
-                if (status.Measurement.Wind) {
-                    windForce = status.Measurement.Wind.Force || 0;
-                    windForceMax = status.Measurement.Wind.ForceMax || 0;
-                    windAngle = status.Measurement.Wind.Direction || 0;
-                    windDirText = status.Measurement.Wind.DirectionText || sensorErrorTag;
-                }
-                self._updateProperty('measure_wind_strength', windForce);
-                self._updateProperty('measure_gust_strength', windForceMax);
-                self._updateProperty('measure_wind_angle', windAngle);
-                self._updateProperty('wind_angle_text',
-                    self.homey.__(enums.decodeWindDirection(windDirText)));
-                let precipitationAmount = 0;
-                let precipitationAmountName = sensorErrorTag;
-                if (status.Measurement.Precipitation) {
-                    precipitationAmount = status.Measurement.Precipitation.Amount || 0;
-                    precipitationAmountName = status.Measurement.Precipitation.AmountName || sensorErrorTag;
-                }
-                self._updateProperty('measure_rain', precipitationAmount);
-                self._updateProperty('precipitation_type',
-                    self.homey.__(enums.decodePrecipitationName(precipitationAmountName)));
+                //self.log(util.inspect(message, { showHidden: false, depth: null }));
+
+                let observation = message.RESPONSE.RESULT[0].WeatherMeasurepoint[0].Observation;
+            
+                self._updateProperty('measure_temperature', observation.Air.Temperature.Value || 0);
+                self._updateProperty('measure_humidity', observation.Air.RelativeHumidity.Value || 0);
+
+                let windDirection = observation.Wind[0].Direction.Value || 0;
+                let windDirectionText = self.homey.__(`wind.${degToCard(windDirection)}`);
+
+                self._updateProperty('measure_wind_strength', observation.Wind[0].Speed.Value || 0);
+                self._updateProperty('measure_gust_strength', observation.Aggregated30minutes.Wind.SpeedMax.Value || 0);
+                self._updateProperty('measure_wind_angle', windDirection);
+                self._updateProperty('wind_angle_text', windDirectionText);
+
+                self._updateProperty('measure_rain', observation.Aggregated30minutes.Precipitation.RainSum.Value);
+                self._updateProperty('measure_rain.snow', observation.Aggregated30minutes.Precipitation.SnowSum.Solid.Value);
+                self._updateProperty('measure_rain.total', observation.Aggregated30minutes.Precipitation.TotalWaterEquivalent.Value);
 
                 self.setSettings({
-                    last_response: JSON.stringify(status, null, "  ")
+                    last_response: JSON.stringify(message.RESPONSE.RESULT[0].WeatherMeasurepoint[0], null, "  ")
                 }).catch(err => {
                     self.error('Failed to update settings', err);
                 });
@@ -157,5 +176,7 @@ class WeatherDevice extends Homey.Device {
     }
 
 }
+
+function degToCard(value) { value = parseFloat(value); if (value <= 11.25) return 'N'; value -= 11.25; var allDirections = ['NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N']; var dIndex = parseInt(value/22.5); return allDirections[dIndex] ? allDirections[dIndex] : 'N'; }
 
 module.exports = WeatherDevice;

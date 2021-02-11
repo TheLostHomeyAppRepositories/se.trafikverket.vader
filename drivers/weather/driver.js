@@ -36,9 +36,9 @@ class WeatherDriver extends Homey.Driver {
                         if (response &&
                             response.RESPONSE &&
                             response.RESPONSE.RESULT[0] &&
-                            response.RESPONSE.RESULT[0].WeatherStation) {
+                            response.RESPONSE.RESULT[0].WeatherMeasurepoint) {
 
-                            response.RESPONSE.RESULT[0].WeatherStation.forEach(station => {
+                            response.RESPONSE.RESULT[0].WeatherMeasurepoint.forEach(station => {
                                 devices.push({
                                     name: station.Name,
                                     data: {
@@ -61,9 +61,9 @@ class WeatherDriver extends Homey.Driver {
                         if (response &&
                             response.RESPONSE &&
                             response.RESPONSE.RESULT[0] &&
-                            response.RESPONSE.RESULT[0].WeatherStation) {
+                            response.RESPONSE.RESULT[0].WeatherMeasurepoint) {
 
-                            response.RESPONSE.RESULT[0].WeatherStation.forEach(station => {
+                            response.RESPONSE.RESULT[0].WeatherMeasurepoint.forEach(station => {
                                 devices.push({
                                     name: station.Name,
                                     data: {

@@ -1,6 +1,6 @@
 {
   "id": "se.trafikverket.vader",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "compatibility": ">=5.0.0",
   "sdk": 3,
   "brandColor": "#d52b1e",
@@ -104,7 +104,8 @@
         "measure_wind_angle",
         "wind_angle_text",
         "measure_rain",
-        "precipitation_type"
+        "measure_rain.snow",
+        "measure_rain.total"
       ],
       "capabilitiesOptions": {
         "measure_wind_strength": {
@@ -115,6 +116,16 @@
         "measure_gust_strength": {
           "units": {
             "en": "m/s"
+          }
+        },
+        "measure_rain.snow": {
+          "title": {
+            "en": "Snow"
+          }
+        },
+        "measure_rain.total": {
+          "title": {
+            "en": "Total water equivalent"
           }
         }
       },
