@@ -89,24 +89,22 @@ class WeatherDevice extends Homey.Device {
         let self = this;
         self.weather.api.getWeatherStationDetails(self.getStationId())
             .then(function (message) {
-                //self.log(util.inspect(message, { showHidden: false, depth: null }));
-
                 let observation = message.RESPONSE.RESULT[0].WeatherMeasurepoint[0].Observation;
-            
-                self._updateProperty('measure_temperature', observation.Air.Temperature.Value || 0);
-                self._updateProperty('measure_humidity', observation.Air.RelativeHumidity.Value || 0);
 
-                let windDirection = observation.Wind[0].Direction.Value || 0;
-                let windDirectionText = self.homey.__(`wind.${degToCard(windDirection)}`);
+                self._updateProperty('measure_temperature', getJSONValueSafely(['Air', 'Temperature', 'Value'], observation) || 0);
+                self._updateProperty('measure_temperature.surface', getJSONValueSafely(['Surface', 'Temperature', 'Value'], observation) || 0);
+                self._updateProperty('measure_humidity', getJSONValueSafely(['Air', 'RelativeHumidity', 'Value'], observation) || 0);
 
-                self._updateProperty('measure_wind_strength', observation.Wind[0].Speed.Value || 0);
-                self._updateProperty('measure_gust_strength', observation.Aggregated30minutes.Wind.SpeedMax.Value || 0);
+                self._updateProperty('measure_wind_strength', getJSONValueSafely(['Wind', 0, 'Speed', 'Value'], observation) || 0);
+                let windDirection = getJSONValueSafely(['Wind', 0, 'Direction', 'Value'], observation) || 0;
                 self._updateProperty('measure_wind_angle', windDirection);
+                let windDirectionText = self.homey.__(`wind.${degToCard(windDirection)}`);
                 self._updateProperty('wind_angle_text', windDirectionText);
 
-                self._updateProperty('measure_rain', observation.Aggregated30minutes.Precipitation.RainSum.Value);
-                self._updateProperty('measure_rain.snow', observation.Aggregated30minutes.Precipitation.SnowSum.Solid.Value);
-                self._updateProperty('measure_rain.total', observation.Aggregated30minutes.Precipitation.TotalWaterEquivalent.Value);
+                self._updateProperty('measure_gust_strength', getJSONValueSafely(['Aggregated30minutes', 'Wind', 'SpeedMax', 'Value'], observation) || 0);
+                self._updateProperty('measure_rain', getJSONValueSafely(['Aggregated30minutes', 'Precipitation', 'RainSum', 'Value'], observation) || 0);
+                self._updateProperty('measure_rain.snow', getJSONValueSafely(['Aggregated30minutes', 'Precipitation', 'SnowSum', 'Solid', 'Value'], observation) || 0);
+                self._updateProperty('measure_rain.total', getJSONValueSafely(['Aggregated30minutes', 'Precipitation', 'TotalWaterEquivalent', 'Value'], observation) || 0);
 
                 self.setSettings({
                     last_response: JSON.stringify(message.RESPONSE.RESULT[0].WeatherMeasurepoint[0], null, "  ")
@@ -116,6 +114,13 @@ class WeatherDevice extends Homey.Device {
             }).catch(reason => {
                 self.error(reason);
             });
+    }
+
+    getJSONValueSafely(json, defaultValue) {
+        let val = defaultValue;
+        try {
+            val = observation.Surface.Temperature.Value;
+        } catch (ignore) {}
     }
 
     _initilializeTimers() {
@@ -177,6 +182,8 @@ class WeatherDevice extends Homey.Device {
 
 }
 
-function degToCard(value) { value = parseFloat(value); if (value <= 11.25) return 'N'; value -= 11.25; var allDirections = ['NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N']; var dIndex = parseInt(value/22.5); return allDirections[dIndex] ? allDirections[dIndex] : 'N'; }
+const getJSONValueSafely = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
+
+function degToCard(value) { value = parseFloat(value); if (value <= 11.25) return 'N'; value -= 11.25; var allDirections = ['NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N']; var dIndex = parseInt(value / 22.5); return allDirections[dIndex] ? allDirections[dIndex] : 'N'; }
 
 module.exports = WeatherDevice;

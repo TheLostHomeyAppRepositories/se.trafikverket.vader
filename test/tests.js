@@ -3,6 +3,7 @@
 const assert = require('assert');
 const Trafikverket = require('../lib/tv_api.js');
 var config = require('./config');
+const util = require('util');
 
 var TV = new Trafikverket({ token: config.token });
 
@@ -32,9 +33,9 @@ describe('VVIS', function () {
 
     describe('#getWeatherStationDetails()', function () {
         it('should return Löddeköpinge', function (done) {
-            //TV.getWeatherStationDetails('SE_STA_VVIS1211')
             TV.getWeatherStationDetails('1211')
                 .then(function (result) {
+                    console.log(util.inspect(result, {showHidden: false, depth: null}));
                     assert.strictEqual(result.RESPONSE.RESULT[0].WeatherMeasurepoint[0].Name, 'Löddeköpinge');
                     done();
                 });

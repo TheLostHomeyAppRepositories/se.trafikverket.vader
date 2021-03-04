@@ -1,6 +1,6 @@
 {
   "id": "se.trafikverket.vader",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "compatibility": ">=5.0.0",
   "sdk": 3,
   "brandColor": "#d52b1e",
@@ -103,6 +103,7 @@
         "measure_gust_strength",
         "measure_wind_angle",
         "wind_angle_text",
+        "measure_temperature.surface",
         "measure_rain",
         "measure_rain.snow",
         "measure_rain.total"
@@ -120,12 +121,20 @@
         },
         "measure_rain.snow": {
           "title": {
-            "en": "Snow"
+            "en": "Snow",
+            "se": "Snö"
           }
         },
         "measure_rain.total": {
           "title": {
-            "en": "Total water equivalent"
+            "en": "Total water equivalent",
+            "se": "Total vattenekvivalent"
+          }
+        },
+        "measure_temperature.surface": {
+          "title": {
+            "en": "Road Surface",
+            "se": "Vägyta"
           }
         }
       },
