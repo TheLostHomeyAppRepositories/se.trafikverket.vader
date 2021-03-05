@@ -6,7 +6,7 @@ const Trafikverket = require('../../lib/tv_api.js');
 
 class WeatherDevice extends Homey.Device {
 
-    onInit() {
+    async onInit() {
         this.log(`Trafikverket weather station initiated, '${this.getName()}'`);
 
         this.pollIntervals = [];
@@ -15,12 +15,14 @@ class WeatherDevice extends Homey.Device {
         this.weather = {
             id: this.getData().id,
             name: this.getName(),
+            images: []
         };
 
         this.setupCapabilities();
 
         this.weather.api = new Trafikverket({ token: Homey.env.API_KEY });
         this.refreshWeatherSiteStatus();
+        this.initializeCameraImages();
 
         this._initilializeTimers();
         this._initializeEventListeners();
@@ -85,6 +87,32 @@ class WeatherDevice extends Homey.Device {
         }
     }
 
+    async createCameraImageURL(camera) {
+        if (camera.HasFullSizePhoto) {
+            return `${camera.PhotoUrl}?type=fullsize`;
+        } else {
+            return camera.PhotoUrl;
+        }
+    }
+
+    initializeCameraImages() {
+        let self = this;
+        self.log('Initializing camera images');
+        self.weather.api.getImageURLForWeatherStation(self.weather.name)
+            .then(async function (message) {
+                const cameras = message.RESPONSE.RESULT[0].Camera;
+                for (const camera of cameras) {
+                    self.log(`Camera '${camera.Name}' for station '${self.weather.name}'`);
+                    let imageUrl = await self.createCameraImageURL(camera);
+                    self.weather.images[camera.Id] = await self.homey.images.createImage();
+                    self.weather.images[camera.Id].setUrl(imageUrl);
+                    await self.setCameraImage(camera.Id, camera.Name, self.weather.images[camera.Id]);
+                }
+            }).catch(reason => {
+                self.error(reason);
+            });
+    }
+
     refreshWeatherSiteStatus() {
         let self = this;
         self.weather.api.getWeatherStationDetails(self.getStationId())
@@ -114,13 +142,15 @@ class WeatherDevice extends Homey.Device {
             }).catch(reason => {
                 self.error(reason);
             });
-    }
 
-    getJSONValueSafely(json, defaultValue) {
-        let val = defaultValue;
+        //Make sure the images are also refreshed, url never changes
         try {
-            val = observation.Surface.Temperature.Value;
-        } catch (ignore) {}
+            self.weather.images.forEach(image => {
+                image.update();
+            });
+        } catch (reason) {
+            self.error(reason);            
+        }
     }
 
     _initilializeTimers() {

@@ -1,7 +1,11 @@
 {
+  "0.9.4": {
+    "en": "Road camera images added",
+    "sv": "Nu kan man även se bilder från vägkamerorna vid en väderstation"
+  },
   "0.9.3": {
     "en": "Road surface temperature added",
-    "sv": "Temperatur i vägutan tillagd"
+    "sv": "Temperatur i vägytan tillagd"
   },
   "0.9.2": {
     "en": "Rewrite to use new API from Trafikverket",
