@@ -53,5 +53,28 @@ describe('VVIS', function () {
         });
     });
     
+    describe('#getRoadConditionsByName()', function () {
+        it('should return 3 road conditions', function (done) {
+            TV.getRoadConditionsByName('21')
+                .then(function (result) {
+                    //console.log(util.inspect(result, {showHidden: false, depth: null}));
+                    assert.strictEqual(result.RESPONSE.RESULT[0].RoadCondition.length, 3);
+                    done();
+                });
+        });
+    });
+
+    describe('#getRoadConditionsByLocation()', function () {
+        it('should return 12 road conditions', function (done) {
+            let lat = 55.695530700000006;
+            let long = 13.0590207;
+            TV.getRoadConditionsByLocation(lat, long, '20000m')
+                .then(function (result) {
+                    //console.log(util.inspect(result, {showHidden: false, depth: null}));
+                    assert.strictEqual(result.RESPONSE.RESULT[0].RoadCondition.length, 12);
+                    done();
+                });
+        });
+    });
 
 });
