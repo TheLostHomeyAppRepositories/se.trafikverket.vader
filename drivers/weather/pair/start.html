@@ -10,7 +10,7 @@
                 var settings = {
                     stationName: stationName
                 };
-                Homey.emit('settings', settings, function (err, result) {
+                Homey.emit('settings', settings).then(function (result) {
                     console.log(result);
                 });
             });

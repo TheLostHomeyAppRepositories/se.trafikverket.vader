@@ -1,7 +1,6 @@
 'use strict';
 
 const Homey = require('homey');
-const util = require('util');
 const Trafikverket = require('../../lib/tv_api.js');
 
 class WeatherDevice extends Homey.Device {
@@ -10,17 +9,11 @@ class WeatherDevice extends Homey.Device {
         this.log(`Trafikverket weather station initiated, '${this.getName()}'`);
 
         this.pollIntervals = [];
-        this.refresh_status_cloud = this.getSettings().refresh_status_cloud || 5;
-
-        this.weather = {
-            id: this.getData().id,
-            name: this.getName(),
-            images: []
-        };
+        this.weatherImages = [];
 
         this.setupCapabilities();
 
-        this.weather.api = new Trafikverket({ token: Homey.env.API_KEY });
+        this.weatherApi = new Trafikverket({ token: Homey.env.API_KEY });
         this.refreshWeatherSiteStatus();
         this.initializeCameraImages();
 
@@ -51,7 +44,7 @@ class WeatherDevice extends Homey.Device {
 
     _initializeEventListeners() {
         let self = this;
-        self.weather.api.on('api_error', error => {
+        self.weatherApi.on('api_error', error => {
             self.error('Houston we have a problem', error);
 
             let message = '';
@@ -78,15 +71,6 @@ class WeatherDevice extends Homey.Device {
         return (err && err.stack && err.message);
     }
 
-    //New API use new id format, this is to be backwards compatible
-    getStationId() {
-        if (isNaN(this.weather.id)) {
-            return this.weather.id.substring(11);
-        } else {
-            return this.weather.id;
-        }
-    }
-
     async createCameraImageURL(camera) {
         if (camera.HasFullSizePhoto) {
             return `${camera.PhotoUrl}?type=fullsize`;
@@ -98,15 +82,15 @@ class WeatherDevice extends Homey.Device {
     initializeCameraImages() {
         let self = this;
         self.log('Initializing camera images');
-        self.weather.api.getImageURLForWeatherStation(self.weather.name)
+        self.weatherApi.getImageURLForWeatherStation(self.getName())
             .then(async function (message) {
                 const cameras = message.RESPONSE.RESULT[0].Camera;
                 for (const camera of cameras) {
-                    self.log(`Camera '${camera.Name}' for station '${self.weather.name}'`);
+                    self.log(`Camera '${camera.Name}' for station '${self.getName()}'`);
                     let imageUrl = await self.createCameraImageURL(camera);
-                    self.weather.images[camera.Id] = await self.homey.images.createImage();
-                    self.weather.images[camera.Id].setUrl(imageUrl);
-                    await self.setCameraImage(camera.Id, camera.Name, self.weather.images[camera.Id]);
+                    self.weatherImages[camera.Id] = await self.homey.images.createImage();
+                    self.weatherImages[camera.Id].setUrl(imageUrl);
+                    await self.setCameraImage(camera.Id, camera.Name, self.weatherImages[camera.Id]);
                 }
             }).catch(reason => {
                 self.error(reason);
@@ -115,7 +99,7 @@ class WeatherDevice extends Homey.Device {
 
     refreshWeatherSiteStatus() {
         let self = this;
-        self.weather.api.getWeatherStationDetails(self.getStationId())
+        self.weatherApi.getWeatherStationDetails(self.getData().id)
             .then(function (message) {
                 let observation = message.RESPONSE.RESULT[0].WeatherMeasurepoint[0].Observation;
 
@@ -145,7 +129,7 @@ class WeatherDevice extends Homey.Device {
 
         //Make sure the images are also refreshed, url never changes
         try {
-            self.weather.images.forEach(image => {
+            self.weatherImages.forEach(image => {
                 image.update();
             });
         } catch (reason) {
@@ -158,7 +142,7 @@ class WeatherDevice extends Homey.Device {
         //Get updates from cloud
         this.pollIntervals.push(setInterval(() => {
             this.refreshWeatherSiteStatus();
-        }, 1000 * 60 * this.refresh_status_cloud));
+        }, 1000 * 60 * this.getSetting('refresh_status_cloud')));
     }
 
     _deleteTimers() {
@@ -188,20 +172,14 @@ class WeatherDevice extends Homey.Device {
     onDeleted() {
         this.log(`Deleting Trafikverket weather station '${this.getName()}' from Homey.`);
         this._deleteTimers();
-        this.weather = null;
+        this.weatherApi = null;
     }
 
-    onRenamed(name) {
-        this.log(`Renaming Trafikverket weather station from '${this.weather.name}' to '${name}'`);
-        this.weather.name = name;
-    }
-
-    async onSettings(oldSettings, newSettings, changedKeysArr) {
+    async onSettings({ oldSettings, newSettings, changedKeys }) {
         let change = false;
 
-        if (changedKeysArr.indexOf("refresh_status_cloud") > -1) {
+        if (changedKeys.indexOf("refresh_status_cloud") > -1) {
             this.log('Refresh cloud value was change to:', newSettings.refresh_status_cloud);
-            this.refresh_status_cloud = newSettings.refresh_status_cloud;
             change = true;
         }
 

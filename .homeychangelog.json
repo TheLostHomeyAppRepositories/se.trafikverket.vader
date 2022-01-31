@@ -1,4 +1,8 @@
 {
+  "0.9.5": {
+    "en": "XXXX",
+    "sv": "XXXX"
+  },
   "0.9.4": {
     "en": "Road camera images added",
     "sv": "Nu kan man även se bilder från vägkamerorna vid en väderstation"
