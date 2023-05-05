@@ -1,26 +1,26 @@
 {
-  "0.9.5": {
-    "en": "Maintenance and fixes",
-    "sv": "Underhåll"
-  },
-  "0.9.4": {
-    "en": "Road camera images added",
-    "sv": "Nu kan man även se bilder från vägkamerorna vid en väderstation"
-  },
-  "0.9.3": {
-    "en": "Road surface temperature added",
-    "sv": "Temperatur i vägytan tillagd"
-  },
-  "0.9.2": {
-    "en": "Rewrite to use new API from Trafikverket",
-    "sv": "Uppdaterad till att använda Trafikverkets nya API"
-  },
-  "0.9.1": {
-    "en": "Solved bug with incomplete API response",
-    "sv": "Löst problemet med icke komplett API svar"
-  },
-  "0.9.0": {
-    "en": "Inital version",
-    "sv": "Första versionen"
-  }
+    "0.9.6": {
+        "en": "Maintenance and fixes",
+        "sv": "Underhåll"
+    },
+    "0.9.4": {
+        "en": "Road camera images added",
+        "sv": "Nu kan man även se bilder från vägkamerorna vid en väderstation"
+    },
+    "0.9.3": {
+        "en": "Road surface temperature added",
+        "sv": "Temperatur i vägytan tillagd"
+    },
+    "0.9.2": {
+        "en": "Rewrite to use new API from Trafikverket",
+        "sv": "Uppdaterad till att använda Trafikverkets nya API"
+    },
+    "0.9.1": {
+        "en": "Solved bug with incomplete API response",
+        "sv": "Löst problemet med icke komplett API svar"
+    },
+    "0.9.0": {
+        "en": "Inital version",
+        "sv": "Första versionen"
+    }
 }

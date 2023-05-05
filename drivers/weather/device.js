@@ -8,10 +8,9 @@ class WeatherDevice extends Homey.Device {
     async onInit() {
         this.log(`Trafikverket weather station initiated, '${this.getName()}'`);
 
-        this.pollIntervals = [];
         this.weatherImages = [];
 
-        this.setupCapabilities();
+        await this.setupCapabilities();
 
         this.weatherApi = new Trafikverket({ token: Homey.env.API_KEY });
         this.refreshWeatherSiteStatus();
@@ -21,24 +20,35 @@ class WeatherDevice extends Homey.Device {
         this._initializeEventListeners();
     }
 
-    setupCapabilities() {
+    async setupCapabilities() {
         this.log('Setting up capabilities');
 
-        let capability = 'precipitation_type';
-        if (this.hasCapability(capability)) {
-            this.log(`Remove existing capability '${capability}'`);
-            this.removeCapability(capability);
-        }
+        //Add and remove capabilities as part of upgrading a device
+        await this.addCapabilityHelper('measure_rain.snow');
+        await this.addCapabilityHelper('measure_rain.total');
+    }
 
-        capability = 'measure_rain.snow';
-        if (!this.hasCapability(capability)) {
-            this.log(`Adding missing capability '${capability}'`);
-            this.addCapability(capability);
+    async removeCapabilityHelper(capability) {
+        if (this.hasCapability(capability)) {
+            try {
+                this.logMessage(`Remove existing capability '${capability}'`);
+                await this.removeCapability(capability);
+            } catch (reason) {
+                this.error(`Failed to removed capability '${capability}'`);
+                this.error(reason);
+            }
         }
-        capability = 'measure_rain.total';
+    }
+
+    async addCapabilityHelper(capability) {
         if (!this.hasCapability(capability)) {
-            this.log(`Adding missing capability '${capability}'`);
-            this.addCapability(capability);
+            try {
+                this.logMessage(`Adding missing capability '${capability}'`);
+                await this.addCapability(capability);
+            } catch (reason) {
+                this.error(`Failed to add capability '${capability}'`);
+                this.error(reason);
+            }
         }
     }
 
@@ -88,9 +98,10 @@ class WeatherDevice extends Homey.Device {
                 for (const camera of cameras) {
                     self.log(`Camera '${camera.Name}' for station '${self.getName()}'`);
                     let imageUrl = await self.createCameraImageURL(camera);
-                    self.weatherImages[camera.Id] = await self.homey.images.createImage();
-                    self.weatherImages[camera.Id].setUrl(imageUrl);
-                    await self.setCameraImage(camera.Id, camera.Name, self.weatherImages[camera.Id]);
+                    const image = await self.homey.images.createImage();
+                    image.setUrl(imageUrl);
+                    await self.setCameraImage(camera.Id, camera.Name, image);
+                    self.weatherImages[camera.Id] = image;
                 }
             }).catch(reason => {
                 self.error(reason);
@@ -128,34 +139,20 @@ class WeatherDevice extends Homey.Device {
             });
 
         //Make sure the images are also refreshed, url never changes
-        try {
-            self.weatherImages.forEach(image => {
-                image.update();
-            });
-        } catch (reason) {
-            self.error(reason);            
+        for (const image of self.weatherImages) {
+            image.update()
+                .catch(err => {
+                    self.error('Failed to update settings', err);
+                });
         }
     }
 
     _initilializeTimers() {
         this.log('Adding timers');
         //Get updates from cloud
-        this.pollIntervals.push(setInterval(() => {
+        this.homey.setInterval(() => {
             this.refreshWeatherSiteStatus();
-        }, 1000 * 60 * this.getSetting('refresh_status_cloud')));
-    }
-
-    _deleteTimers() {
-        //Kill interval object(s)
-        this.log('Removing timers');
-        this.pollIntervals.forEach(timer => {
-            clearInterval(timer);
-        });
-    }
-
-    _reinitializeTimers() {
-        this._deleteTimers();
-        this._initilializeTimers();
+        }, 1000 * 60 * this.getSetting('refresh_status_cloud'));
     }
 
     _updateProperty(key, value) {
@@ -171,21 +168,7 @@ class WeatherDevice extends Homey.Device {
 
     onDeleted() {
         this.log(`Deleting Trafikverket weather station '${this.getName()}' from Homey.`);
-        this._deleteTimers();
         this.weatherApi = null;
-    }
-
-    async onSettings({ oldSettings, newSettings, changedKeys }) {
-        let change = false;
-
-        if (changedKeys.indexOf("refresh_status_cloud") > -1) {
-            this.log('Refresh cloud value was change to:', newSettings.refresh_status_cloud);
-            change = true;
-        }
-
-        if (change) {
-            this._reinitializeTimers();
-        }
     }
 
 }

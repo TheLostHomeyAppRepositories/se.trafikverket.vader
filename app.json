@@ -1,6 +1,6 @@
 {
   "id": "se.trafikverket.vader",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "compatibility": ">=5.0.0",
   "sdk": 3,
   "brandColor": "#d52b1e",
@@ -71,17 +71,6 @@
       "setable": false,
       "uiComponent": "sensor",
       "icon": "/assets/wind_direction.svg"
-    },
-    "precipitation_type": {
-      "type": "string",
-      "title": {
-        "en": "Precipitation",
-        "sv": "Nederbörd"
-      },
-      "getable": true,
-      "setable": false,
-      "uiComponent": "sensor",
-      "icon": "/assets/precipitation.svg"
     }
   },
   "drivers": [
@@ -152,6 +141,10 @@
               "label": {
                 "en": "Refresh from cloud (minutes)",
                 "se": "Uppdateringsintervall"
+              },
+              "hint": {
+                "en": "How frequently should the information be refreshed. Restart the app for the new value to take effect.",
+                "sv": "Hur frekvent skall informationen uppdateras. Start om appen för att ett nytt värde skall användas."
               },
               "value": 5,
               "min": 5,
