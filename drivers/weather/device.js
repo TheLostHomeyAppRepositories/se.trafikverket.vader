@@ -142,7 +142,7 @@ class WeatherDevice extends Homey.Device {
         for (const image of self.weatherImages) {
             image.update()
                 .catch(err => {
-                    self.error('Failed to update settings', err);
+                    self.error('Failed to update camera image', err);
                 });
         }
     }
