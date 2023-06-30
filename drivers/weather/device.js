@@ -12,7 +12,11 @@ class WeatherDevice extends Homey.Device {
 
         await this.setupCapabilities();
 
-        this.weatherApi = new Trafikverket({ token: Homey.env.API_KEY });
+        this.weatherApi = new Trafikverket({ 
+            token: Homey.env.API_KEY,
+            device: this
+        });
+
         this.refreshWeatherSiteStatus();
         this.initializeCameraImages();
 

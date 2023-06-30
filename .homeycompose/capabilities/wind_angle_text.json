@@ -1,0 +1,11 @@
+{
+    "type": "string",
+    "title": {
+        "en": "Wind direction",
+        "sv": "Vindriktning"
+    },
+    "getable": true,
+    "setable": false,
+    "uiComponent": "sensor",
+    "icon": "/assets/wind_direction.svg"
+}

@@ -1,0 +1,63 @@
+{
+  "id": "se.trafikverket.vader",
+  "version": "0.9.7",
+  "compatibility": ">=5.0.0",
+  "sdk": 3,
+  "brandColor": "#d52b1e",
+  "name": {
+    "en": "Swedish Trafikverket weather",
+    "sv": "Trafikverket väderinformation "
+  },
+  "tags": {
+    "en": [
+      "trafikverket",
+      "vvis",
+      "weather",
+      "temperature",
+      "rain",
+      "wind",
+      "sweden"
+    ],
+    "se": [
+      "trafikverket",
+      "vvis",
+      "vägväder",
+      "väder",
+      "temperatur",
+      "regn",
+      "vind",
+      "sverige",
+      "svenska"
+    ]
+  },
+  "description": {
+    "en": "Weather from Swedish Trafikverkets weather stations",
+    "sv": "Väder från Trafikverkets vägväderstationer"
+  },
+  "category": [
+    "climate"
+  ],
+  "permissions": [
+    "homey:manager:geolocation"
+  ],
+  "images": {
+    "large": "/assets/images/large.jpg",
+    "small": "/assets/images/small.jpg"
+  },
+  "author": {
+    "name": "Richard Barkestam",
+    "email": "richard@barkestam.se"
+  },
+  "contributing": {
+    "donate": {
+      "paypal": {
+        "username": "RBarkestam",
+        "currency": "EUR"
+      }
+    }
+  },
+  "bugs": {
+    "url": "https://github.com/ricott/homey-se.trafikverket.vader/issues"
+  },
+  "source": "https://github.com/ricott/homey-se.trafikverket.vader"
+}

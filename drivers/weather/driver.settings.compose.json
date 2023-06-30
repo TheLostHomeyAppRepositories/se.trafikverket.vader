@@ -1,0 +1,52 @@
+[
+    {
+        "type": "group",
+        "label": {
+            "en": "Weather station settings",
+            "se": "Väderstation inställningar"
+        },
+        "children": [
+            {
+                "id": "refresh_status_cloud",
+                "type": "number",
+                "label": {
+                    "en": "Refresh from cloud (minutes)",
+                    "se": "Uppdateringsintervall"
+                },
+                "hint": {
+                    "en": "How frequently should the information be refreshed. Restart the app for the new value to take effect.",
+                    "sv": "Hur frekvent skall informationen uppdateras. Start om appen för att ett nytt värde skall användas."
+                },
+                "value": 5,
+                "min": 5,
+                "max": 60
+            }
+        ]
+    },
+    {
+        "type": "group",
+        "label": {
+            "en": "Debug"
+        },
+        "children": [
+            {
+                "id": "last_response",
+                "type": "textarea",
+                "label": {
+                    "en": "Last API response",
+                    "se": "Senaste API svaret"
+                },
+                "value": ""
+            },
+            {
+                "id": "last_error",
+                "type": "textarea",
+                "label": {
+                    "en": "Last API error",
+                    "se": "Senaste API felmeddelandet"
+                },
+                "value": ""
+            }
+        ]
+    }
+]
