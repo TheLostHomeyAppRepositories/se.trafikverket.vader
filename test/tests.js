@@ -35,7 +35,7 @@ describe('VVIS', function () {
         it('should return Löddeköpinge', function (done) {
             TV.getWeatherStationDetails('1211')
                 .then(function (result) {
-                    //console.log(util.inspect(result, {showHidden: false, depth: null}));
+                    console.log(util.inspect(result, {showHidden: false, depth: null}));
                     assert.strictEqual(result.RESPONSE.RESULT[0].WeatherMeasurepoint[0].Name, 'Löddeköpinge');
                     done();
                 });

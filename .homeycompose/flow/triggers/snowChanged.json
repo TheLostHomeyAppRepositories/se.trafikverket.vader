@@ -1,0 +1,24 @@
+{
+    "id": "snowChanged",
+    "title": {
+        "en": "The snow changed",
+        "sv": "Snömängden ändrades"
+    },
+    "tokens": [
+        {
+            "name": "snow",
+            "type": "number",
+            "title": {
+                "en": "Snow",
+                "sv": "Snö"
+            }
+        }
+    ],
+    "args": [
+        {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=weather"
+        }
+    ]
+}

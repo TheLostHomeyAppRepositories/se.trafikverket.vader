@@ -9,10 +9,11 @@ class WeatherDevice extends Homey.Device {
         this.log(`Trafikverket weather station initiated, '${this.getName()}'`);
 
         this.weatherImages = [];
+        this._snowChanged = this.homey.flow.getDeviceTriggerCard('snowChanged');
 
         await this.setupCapabilities();
 
-        this.weatherApi = new Trafikverket({ 
+        this.weatherApi = new Trafikverket({
             token: Homey.env.API_KEY,
             device: this
         });
@@ -160,12 +161,28 @@ class WeatherDevice extends Homey.Device {
     }
 
     _updateProperty(key, value) {
-        if (this.hasCapability(key)) {
-            let oldValue = this.getCapabilityValue(key);
-            if (oldValue !== null && oldValue != value) {
-                this.setCapabilityValue(key, value);
+        let self = this;
+        if (self.hasCapability(key)) {
+            if (typeof value !== 'undefined' && value !== null) {
+                let oldValue = self.getCapabilityValue(key);
+                if (oldValue !== null && oldValue != value) {
+                    self.setCapabilityValue(key, value)
+                        .then(function () {
+
+                            if (key === 'measure_rain.snow') {
+                                let tokens = {
+                                    snow: value
+                                }
+                                self._snowChanged.trigger(self, tokens, {}).catch(error => { self.error(error) });
+                            }
+                        }).catch(reason => {
+                            self.error(reason);
+                        });
+                } else {
+                    self.setCapabilityValue(key, value);
+                }
             } else {
-                this.setCapabilityValue(key, value);
+                self.log(`Value for capability '${key}' is 'undefined'`);
             }
         }
     }

@@ -7,6 +7,41 @@ class WeatherDriver extends Homey.Driver {
 
     async onInit() {
         this.log('Trafikverket weather driver has been initialized');
+
+        this._registerFlows();
+    }
+
+    _registerFlows() {
+        this.log('Registering flows');
+        //Conditions
+        const rainAmount = this.homey.flow.getConditionCard('rainAmount');
+        rainAmount.registerRunListener(async (args, state) => {
+            this.log(`[${args.device.getName()}] Condition 'rainAmount' triggered`);
+            const rain = args.device.getCapabilityValue('measure_rain');
+            this.log(`[${args.device.getName()}] - inverter.measure_rain: '${rain}'`);
+            this.log(`[${args.device.getName()}] - parameter rain: '${args.rain}'`);
+
+            if (rain > args.rain) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+
+        const snowAmount = this.homey.flow.getConditionCard('snowAmount');
+        snowAmount.registerRunListener(async (args, state) => {
+            this.log(`[${args.device.getName()}] Condition 'snowAmount' triggered`);
+            const snow = args.device.getCapabilityValue('measure_rain.snow');
+            this.log(`[${args.device.getName()}] - inverter.measure_rain.snow: '${snow}'`);
+            this.log(`[${args.device.getName()}] - parameter snow: '${args.snow}'`);
+
+            if (snow > args.snow) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+
     }
 
     async onPair(session) {

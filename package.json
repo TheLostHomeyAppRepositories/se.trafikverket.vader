@@ -9,5 +9,8 @@
   "scripts": {
     "test": "mocha"
   },
-  "author": "Richard Barkestam"
+  "author": "Richard Barkestam",
+  "devDependencies": {
+    "mocha": "^10.2.0"
+  }
 }

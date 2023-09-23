@@ -1,0 +1,26 @@
+{
+    "id": "snowAmount",
+    "title": {
+        "en": "The snow for the last 30 minutes is !{{more|less}} than [[snow]]",
+        "sv": "Snö senaste 30 minuterna är !{{mer|mindre}} än [[snow]]"
+    },
+    "titleFormatted": {
+        "en": "The snow for the last 30 minutes is !{{more|less}} than [[snow]]",
+        "sv": "Snö senaste 30 minuterna är !{{mer|mindre}} än [[snow]]"
+    },
+    "args": [
+        {
+            "name": "snow",
+            "type": "number",
+            "title": {
+                "en": "Snow",
+                "sv": "Snö"
+            }
+        },
+        {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=weather"
+        }
+    ]
+}

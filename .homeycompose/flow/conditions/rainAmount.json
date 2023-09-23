@@ -1,0 +1,26 @@
+{
+    "id": "rainAmount",
+    "title": {
+        "en": "The rain for the last 30 minutes is !{{more|less}} than [[rain]]",
+        "sv": "Regnet senaste 30 minuterna är !{{mer|mindre}} än [[rain]]"
+    },
+    "titleFormatted": {
+        "en": "The rain for the last 30 minutes is !{{more|less}} than [[rain]]",
+        "sv": "Regnet senaste 30 minuterna är !{{mer|mindre}} än [[rain]]"
+    },
+    "args": [
+        {
+            "name": "rain",
+            "type": "number",
+            "title": {
+                "en": "Rain",
+                "sv": "Regn"
+            }
+        },
+        {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=weather"
+        }
+    ]
+}
