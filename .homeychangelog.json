@@ -1,4 +1,8 @@
 {
+    "0.9.9": {
+        "en": "Updated readme and creation of a forum page for the app",
+        "sv": "Uppdaterad readme samt forum sida för appen"
+    },
     "0.9.8": {
         "en": "New rain and snow flow conditions",
         "sv": "Nya regn och snö kort"
