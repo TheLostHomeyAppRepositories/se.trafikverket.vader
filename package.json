@@ -11,6 +11,6 @@
   },
   "author": "Richard Barkestam",
   "devDependencies": {
-    "mocha": "^10.3.0"
+    "mocha": "^10.7.3"
   }
 }

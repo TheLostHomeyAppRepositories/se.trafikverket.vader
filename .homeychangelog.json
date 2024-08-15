@@ -1,4 +1,8 @@
 {
+    "1.0.1": {
+        "en": "Maintenance and fixes",
+        "sv": "Underhåll"
+    },
     "1.0.0": {
         "en": "New weather station device icon",
         "sv": "Ny ikon för väderstationer"

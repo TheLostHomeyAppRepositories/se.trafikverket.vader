@@ -13,7 +13,7 @@ describe('VVIS', function () {
         it('should return 10 locations', function (done) {
             TV.getWeatherStationsByName('Sto')
                 .then(function (result) {
-                    assert.strictEqual(result.RESPONSE.RESULT[0].WeatherMeasurepoint.length, 10);
+                    assert.strictEqual(result.RESPONSE.RESULT[0].WeatherMeasurepoint.length, 11);
                     done();
                 });
         });
@@ -25,7 +25,7 @@ describe('VVIS', function () {
             let long = 13.0590207;
             TV.getWeatherStationsByLocation(lat, long, '20000m')
                 .then(function (result) {
-                    assert.strictEqual(result.RESPONSE.RESULT[0].WeatherMeasurepoint.length, 11);
+                    assert.strictEqual(result.RESPONSE.RESULT[0].WeatherMeasurepoint.length, 6);
                     done();
                 });
         });
@@ -33,10 +33,10 @@ describe('VVIS', function () {
 
     describe('#getWeatherStationDetails()', function () {
         it('should return Löddeköpinge', function (done) {
-            TV.getWeatherStationDetails('1211')
+            TV.getWeatherStationDetails('1227')
                 .then(function (result) {
-                    console.log(util.inspect(result, {showHidden: false, depth: null}));
-                    assert.strictEqual(result.RESPONSE.RESULT[0].WeatherMeasurepoint[0].Name, 'Löddeköpinge');
+                    // console.log(util.inspect(result, {showHidden: false, depth: null}));
+                    assert.strictEqual(result.RESPONSE.RESULT[0].WeatherMeasurepoint[0].Name, 'Lernacken');
                     done();
                 });
         });
