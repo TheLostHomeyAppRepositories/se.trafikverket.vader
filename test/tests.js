@@ -21,6 +21,7 @@ describe('VVIS', function () {
 
     describe('#getWeatherStationsByLocation()', function () {
         it('should return 11 locations', function (done) {
+            this.timeout(10000);
             let lat = 55.695530700000006;
             let long = 13.0590207;
             TV.getWeatherStationsByLocation(lat, long, '20000m')

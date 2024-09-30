@@ -2,10 +2,6 @@
   "name": "se.trafikverket.vader",
   "version": "0.9.0",
   "main": "app.js",
-  "dependencies": {
-    "events": "^3.3.0",
-    "http.min": "^2.1.0"
-  },
   "scripts": {
     "test": "mocha"
   },

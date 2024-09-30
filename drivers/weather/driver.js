@@ -59,7 +59,7 @@ class WeatherDriver extends Homey.Driver {
         session.setHandler('list_devices', async (data) => {
             var self = this;
             let devices = [];
-            let TV = new Trafikverket({ token: Homey.env.API_KEY });
+            const TV = new Trafikverket({ token: Homey.env.API_KEY });
 
             if (self.stationName) {
                 self.log(`Searching for a specific station by name '${self.stationName}'`);

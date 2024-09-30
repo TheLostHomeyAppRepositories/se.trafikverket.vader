@@ -1,7 +1,7 @@
 {
   "id": "se.trafikverket.vader",
-  "version": "1.0.1",
-  "compatibility": ">=5.0.0",
+  "version": "1.0.2",
+  "compatibility": ">=12.0.1",
   "sdk": 3,
   "brandColor": "#d52b1e",
   "name": {
