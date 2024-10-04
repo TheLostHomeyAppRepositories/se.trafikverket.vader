@@ -8,5 +8,9 @@
   "author": "Richard Barkestam",
   "devDependencies": {
     "mocha": "^10.7.3"
+  },
+  "dependencies": {
+    "events": "^3.3.0",
+    "http.min": "^2.1.0"
   }
 }
