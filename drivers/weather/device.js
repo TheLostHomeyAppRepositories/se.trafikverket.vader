@@ -3,10 +3,17 @@
 const Homey = require('homey');
 const Trafikverket = require('../../lib/tv_api.js');
 
+const deviceClass = 'service';
+
 class WeatherDevice extends Homey.Device {
 
     async onInit() {
         this.log(`Trafikverket weather station initiated, '${this.getName()}'`);
+
+        // Change device class to service if not already
+        if (this.getClass() !== deviceClass) {
+            await this.setClass(deviceClass);
+        }
 
         this.weatherImages = [];
         this._snowChanged = this.homey.flow.getDeviceTriggerCard('snowChanged');

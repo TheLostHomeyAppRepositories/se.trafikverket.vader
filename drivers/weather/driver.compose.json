@@ -3,7 +3,7 @@
         "en": "Weather station",
         "se": "Väderstation"
     },
-    "class": "other",
+    "class": "service",
     "images": {
         "large": "/drivers/weather/assets/images/large.jpg",
         "small": "/drivers/weather/assets/images/small.jpg"
