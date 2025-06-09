@@ -20,13 +20,13 @@ class WeatherDevice extends Homey.Device {
 
         await this.setupCapabilities();
 
-        this.weatherApi = new Trafikverket({
+        this.api = new Trafikverket({
             token: Homey.env.API_KEY,
             device: this
         });
 
-        this.refreshWeatherSiteStatus();
-        this.initializeCameraImages();
+        await this.refreshWeatherSiteStatus();
+        await this.initializeCameraImages();
 
         this._initilializeTimers();
         this._initializeEventListeners();
@@ -65,27 +65,29 @@ class WeatherDevice extends Homey.Device {
     }
 
     _initializeEventListeners() {
-        let self = this;
-        self.weatherApi.on('api_error', error => {
-            self.error('Houston we have a problem', error);
+        this.api.on('api_error', async (error) => {
+            this.error('API error occurred:', error);
 
             let message = '';
-            if (self.isError(error)) {
+            if (this.isError(error)) {
                 message = error.stack;
             } else {
                 try {
                     message = JSON.stringify(error, null, "  ");
                 } catch (e) {
-                    self.log('Failed to stringify object', e);
+                    this.log('Failed to stringify error object:', e);
                     message = error.toString();
                 }
             }
 
-            let dateTime = new Date().toISOString();
-            self.setSettings({ last_error: dateTime + '\n' + message })
-                .catch(err => {
-                    self.error('Failed to update settings', err);
+            const dateTime = new Date().toISOString();
+            try {
+                await this.setSettings({ 
+                    last_error: `${dateTime}\n${message}` 
                 });
+            } catch (settingsError) {
+                this.error('Failed to update error settings:', settingsError);
+            }
         });
     }
 
@@ -101,61 +103,73 @@ class WeatherDevice extends Homey.Device {
         }
     }
 
-    initializeCameraImages() {
-        let self = this;
-        self.log('Initializing camera images');
-        self.weatherApi.getImageURLForWeatherStation(self.getName())
-            .then(async function (message) {
-                const cameras = message.RESPONSE.RESULT[0].Camera;
-                for (const camera of cameras) {
-                    self.log(`Camera '${camera.Name}' for station '${self.getName()}'`);
-                    let imageUrl = await self.createCameraImageURL(camera);
-                    const image = await self.homey.images.createImage();
+    async initializeCameraImages() {
+        this.log('Initializing camera images');
+        
+        try {
+            const message = await this.api.getImageURLForWeatherStation(this.getName());
+            const cameras = message.RESPONSE.RESULT[0].Camera;
+            
+            for (const camera of cameras) {
+                this.log(`Camera '${camera.Name}' for station '${this.getName()}'`);
+                
+                try {
+                    const imageUrl = await this.createCameraImageURL(camera);
+                    const image = await this.homey.images.createImage();
                     image.setUrl(imageUrl);
-                    await self.setCameraImage(camera.Id, camera.Name, image);
-                    self.weatherImages[camera.Id] = image;
+                    await this.setCameraImage(camera.Id, camera.Name, image);
+                    this.weatherImages[camera.Id] = image;
+                } catch (error) {
+                    this.error(`Failed to initialize camera '${camera.Name}':`, error);
                 }
-            }).catch(reason => {
-                self.error(reason);
-            });
+            }
+        } catch (error) {
+            this.error('Failed to initialize camera images:', error);
+        }
     }
 
-    refreshWeatherSiteStatus() {
-        let self = this;
-        self.weatherApi.getWeatherStationDetails(self.getData().id)
-            .then(function (message) {
-                let observation = message.RESPONSE.RESULT[0].WeatherMeasurepoint[0].Observation;
+    async refreshWeatherSiteStatus() {
+        try {
+            const message = await this.api.getWeatherStationDetails(this.getData().id);
+            const observation = message.RESPONSE.RESULT[0].WeatherMeasurepoint[0].Observation;
 
-                self._updateProperty('measure_temperature', getJSONValueSafely(['Air', 'Temperature', 'Value'], observation) || 0);
-                self._updateProperty('measure_temperature.surface', getJSONValueSafely(['Surface', 'Temperature', 'Value'], observation) || 0);
-                self._updateProperty('measure_humidity', getJSONValueSafely(['Air', 'RelativeHumidity', 'Value'], observation) || 0);
+            // Update temperature measurements
+            await this._updateProperty('measure_temperature', getJSONValueSafely(['Air', 'Temperature', 'Value'], observation) || 0);
+            await this._updateProperty('measure_temperature.surface', getJSONValueSafely(['Surface', 'Temperature', 'Value'], observation) || 0);
+            await this._updateProperty('measure_humidity', getJSONValueSafely(['Air', 'RelativeHumidity', 'Value'], observation) || 0);
 
-                self._updateProperty('measure_wind_strength', getJSONValueSafely(['Wind', 0, 'Speed', 'Value'], observation) || 0);
-                let windDirection = getJSONValueSafely(['Wind', 0, 'Direction', 'Value'], observation) || 0;
-                self._updateProperty('measure_wind_angle', windDirection);
-                let windDirectionText = self.homey.__(`wind.${degToCard(windDirection)}`);
-                self._updateProperty('wind_angle_text', windDirectionText);
+            // Update wind measurements
+            await this._updateProperty('measure_wind_strength', getJSONValueSafely(['Wind', 0, 'Speed', 'Value'], observation) || 0);
+            const windDirection = getJSONValueSafely(['Wind', 0, 'Direction', 'Value'], observation) || 0;
+            await this._updateProperty('measure_wind_angle', windDirection);
+            const windDirectionText = this.homey.__(`wind.${degToCard(windDirection)}`);
+            await this._updateProperty('wind_angle_text', windDirectionText);
 
-                self._updateProperty('measure_gust_strength', getJSONValueSafely(['Aggregated30minutes', 'Wind', 'SpeedMax', 'Value'], observation) || 0);
-                self._updateProperty('measure_rain', getJSONValueSafely(['Aggregated30minutes', 'Precipitation', 'RainSum', 'Value'], observation) || 0);
-                self._updateProperty('measure_rain.snow', getJSONValueSafely(['Aggregated30minutes', 'Precipitation', 'SnowSum', 'Solid', 'Value'], observation) || 0);
-                self._updateProperty('measure_rain.total', getJSONValueSafely(['Aggregated30minutes', 'Precipitation', 'TotalWaterEquivalent', 'Value'], observation) || 0);
+            // Update precipitation and gust measurements
+            await this._updateProperty('measure_gust_strength', getJSONValueSafely(['Aggregated30minutes', 'Wind', 'SpeedMax', 'Value'], observation) || 0);
+            await this._updateProperty('measure_rain', getJSONValueSafely(['Aggregated30minutes', 'Precipitation', 'RainSum', 'Value'], observation) || 0);
+            await this._updateProperty('measure_rain.snow', getJSONValueSafely(['Aggregated30minutes', 'Precipitation', 'SnowSum', 'Solid', 'Value'], observation) || 0);
+            await this._updateProperty('measure_rain.total', getJSONValueSafely(['Aggregated30minutes', 'Precipitation', 'TotalWaterEquivalent', 'Value'], observation) || 0);
 
-                self.setSettings({
+            // Update settings with last response
+            try {
+                await this.setSettings({
                     last_response: JSON.stringify(message.RESPONSE.RESULT[0].WeatherMeasurepoint[0], null, "  ")
-                }).catch(err => {
-                    self.error('Failed to update settings', err);
                 });
-            }).catch(reason => {
-                self.error(reason);
-            });
+            } catch (error) {
+                this.error('Failed to update settings:', error);
+            }
+        } catch (error) {
+            this.error('Failed to refresh weather site status:', error);
+        }
 
-        //Make sure the images are also refreshed, url never changes
-        for (const image of self.weatherImages) {
-            image.update()
-                .catch(err => {
-                    self.error('Failed to update camera image', err);
-                });
+        // Refresh camera images (URL never changes)
+        for (const image of this.weatherImages) {
+            try {
+                await image.update();
+            } catch (error) {
+                this.error('Failed to update camera image:', error);
+            }
         }
     }
 
@@ -167,36 +181,41 @@ class WeatherDevice extends Homey.Device {
         }, 1000 * 60 * this.getSetting('refresh_status_cloud'));
     }
 
-    _updateProperty(key, value) {
-        let self = this;
-        if (self.hasCapability(key)) {
-            if (typeof value !== 'undefined' && value !== null) {
-                let oldValue = self.getCapabilityValue(key);
-                if (oldValue !== null && oldValue != value) {
-                    self.setCapabilityValue(key, value)
-                        .then(function () {
+    async _updateProperty(key, value) {
+        if (!this.hasCapability(key)) {
+            return;
+        }
 
-                            if (key === 'measure_rain.snow') {
-                                let tokens = {
-                                    snow: value
-                                }
-                                self._snowChanged.trigger(self, tokens, {}).catch(error => { self.error(error) });
-                            }
-                        }).catch(reason => {
-                            self.error(reason);
-                        });
-                } else {
-                    self.setCapabilityValue(key, value);
+        if (typeof value === 'undefined' || value === null) {
+            this.log(`Value for capability '${key}' is 'undefined'`);
+            return;
+        }
+
+        const oldValue = this.getCapabilityValue(key);
+        
+        try {
+            if (oldValue !== null && oldValue !== value) {
+                await this.setCapabilityValue(key, value);
+                
+                if (key === 'measure_rain.snow') {
+                    const tokens = { snow: value };
+                    try {
+                        await this._snowChanged.trigger(this, tokens, {});
+                    } catch (error) {
+                        this.error('Failed to trigger snow changed event:', error);
+                    }
                 }
             } else {
-                self.log(`Value for capability '${key}' is 'undefined'`);
+                await this.setCapabilityValue(key, value);
             }
+        } catch (error) {
+            this.error(`Failed to update capability '${key}':`, error);
         }
     }
 
     onDeleted() {
         this.log(`Deleting Trafikverket weather station '${this.getName()}' from Homey.`);
-        this.weatherApi = null;
+        this.api = null;
     }
 
 }
