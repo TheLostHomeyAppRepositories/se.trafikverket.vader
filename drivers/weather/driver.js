@@ -13,6 +13,9 @@ class WeatherDriver extends Homey.Driver {
 
     _registerFlows() {
         this.log('Registering flows');
+
+        this._snowChanged = this.homey.flow.getDeviceTriggerCard('snowChanged');
+
         //Conditions
         const rainAmount = this.homey.flow.getConditionCard('rainAmount');
         rainAmount.registerRunListener(async (args, state) => {
@@ -44,73 +47,60 @@ class WeatherDriver extends Homey.Driver {
 
     }
 
+    async triggerSnowChanged(device, tokens) {
+        await this._snowChanged.trigger(device, {}, tokens).catch(error => { this.error(error) });
+    }
+
     async onPair(session) {
         session.setHandler('settings', async (data) => {
             if (data.stationName) {
                 this.log(`User wants to search for '${data.stationName}'`);
                 this.stationName = data.stationName;
             } else {
-                this.log('User decided to search for stations nearby Homeys location');
+                this.log('User decided to search for stations nearby Homey location');
             }
             await session.showView('list_devices');
             return 'done';
         });
 
         session.setHandler('list_devices', async (data) => {
-            var self = this;
-            let devices = [];
+            const devices = [];
             const TV = new Trafikverket({ token: Homey.env.API_KEY });
 
-            if (self.stationName) {
-                self.log(`Searching for a specific station by name '${self.stationName}'`);
-                return TV.getWeatherStationsByName(self.stationName)
-                    .then(function (response) {
-                        //Reset station name
-                        self.stationName = null;
+            try {
+                let response;
 
-                        if (response &&
-                            response.RESPONSE &&
-                            response.RESPONSE.RESULT[0] &&
-                            response.RESPONSE.RESULT[0].WeatherMeasurepoint) {
+                if (this.stationName) {
+                    this.log(`Searching for a specific station by name '${this.stationName}'`);
+                    response = await TV.getWeatherStationsByName(this.stationName);
+                    // Reset station name
+                    this.stationName = null;
+                } else {
+                    this.log('Searching for stations nearby Homey location');
+                    response = await TV.getWeatherStationsByLocation(
+                        this.homey.geolocation.getLatitude(),
+                        this.homey.geolocation.getLongitude(),
+                        '20000m'
+                    );
+                }
 
-                            response.RESPONSE.RESULT[0].WeatherMeasurepoint.forEach(station => {
-                                devices.push({
-                                    name: station.Name,
-                                    data: {
-                                        id: station.Id
-                                    }
-                                });
-                            });
-                        } else {
-                            self.log('We didnt get any weather stations in response from the API');
-                        }
-                        return devices;
+                if (response?.RESPONSE?.RESULT?.[0]?.WeatherMeasurepoint) {
+                    response.RESPONSE.RESULT[0].WeatherMeasurepoint.forEach(station => {
+                        devices.push({
+                            name: station.Name,
+                            data: {
+                                id: station.Id
+                            }
+                        });
                     });
-            } else {
-                self.log(`Searching for stations nearby Homeys location`);
-                return TV.getWeatherStationsByLocation(
-                    self.homey.geolocation.getLatitude(),
-                    self.homey.geolocation.getLongitude(),
-                    '20000m').then(function (response) {
+                } else {
+                    this.log('No weather stations received in API response');
+                }
 
-                        if (response &&
-                            response.RESPONSE &&
-                            response.RESPONSE.RESULT[0] &&
-                            response.RESPONSE.RESULT[0].WeatherMeasurepoint) {
-
-                            response.RESPONSE.RESULT[0].WeatherMeasurepoint.forEach(station => {
-                                devices.push({
-                                    name: station.Name,
-                                    data: {
-                                        id: station.Id
-                                    }
-                                });
-                            });
-                        } else {
-                            self.log('We didnt get any weather stations in response from the API');
-                        }
-                        return devices;
-                    });
+                return devices;
+            } catch (error) {
+                this.error('Failed to get weather stations:', error);
+                return [];
             }
         });
     }

@@ -16,7 +16,6 @@ class WeatherDevice extends Homey.Device {
         }
 
         this.weatherImages = [];
-        this._snowChanged = this.homey.flow.getDeviceTriggerCard('snowChanged');
 
         await this.setupCapabilities();
 
@@ -200,7 +199,7 @@ class WeatherDevice extends Homey.Device {
                 if (key === 'measure_rain.snow') {
                     const tokens = { snow: value };
                     try {
-                        await this._snowChanged.trigger(this, tokens, {});
+                        await this.driver.triggerSnowChanged(this, tokens);
                     } catch (error) {
                         this.error('Failed to trigger snow changed event:', error);
                     }
