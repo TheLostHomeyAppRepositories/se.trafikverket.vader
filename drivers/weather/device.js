@@ -95,10 +95,27 @@ class WeatherDevice extends Homey.Device {
     }
 
     async createCameraImageURL(camera) {
-        if (camera.HasFullSizePhoto) {
-            return `${camera.PhotoUrl}?type=fullsize`;
+        // Validate camera object and PhotoUrl
+        if (!camera || !camera.PhotoUrl) {
+            this.error('Invalid camera object or missing PhotoUrl:', camera);
+            return null;
+        }
+        
+        // Ensure PhotoUrl is a string
+        const photoUrl = String(camera.PhotoUrl).trim();
+        if (!photoUrl) {
+            this.error('Empty PhotoUrl for camera:', camera);
+            return null;
+        }
+        
+        // Check if camera has full size photo capability
+        if (camera.HasFullSizePhoto === true || camera.HasFullSizePhoto === 'true') {
+            const fullSizeUrl = `${photoUrl}?type=fullsize`;
+            this.log(`Using full size image URL for camera '${camera.Name}': ${fullSizeUrl}`);
+            return fullSizeUrl;
         } else {
-            return camera.PhotoUrl;
+            this.log(`Using standard image URL for camera '${camera.Name}': ${photoUrl}`);
+            return photoUrl;
         }
     }
 
@@ -107,23 +124,77 @@ class WeatherDevice extends Homey.Device {
         
         try {
             const message = await this.api.getImageURLForWeatherStation(this.getName());
+            
+            // Validate API response structure
+            if (!message || !message.RESPONSE || !message.RESPONSE.RESULT || !message.RESPONSE.RESULT[0]) {
+                this.error('Invalid API response structure for camera images');
+                return;
+            }
+            
             const cameras = message.RESPONSE.RESULT[0].Camera;
             
+            // Validate cameras array
+            if (!Array.isArray(cameras) || cameras.length === 0) {
+                this.log('No cameras found for this weather station');
+                return;
+            }
+            
+            this.log(`Found ${cameras.length} camera(s) for station '${this.getName()}'`);
+            
+            // Process cameras sequentially to avoid race conditions
             for (const camera of cameras) {
-                this.log(`Camera '${camera.Name}' for station '${this.getName()}'`);
-                
+                await this.initializeSingleCamera(camera);
+            }
+            
+            this.log(`Successfully initialized ${Object.keys(this.weatherImages).length} camera image(s)`);
+        } catch (error) {
+            this.error('Failed to initialize camera images:', error);
+            // Retry after a delay
+            setTimeout(() => {
+                this.log('Retrying camera image initialization...');
+                this.initializeCameraImages();
+            }, 30000); // Retry after 30 seconds
+        }
+    }
+
+    async initializeSingleCamera(camera) {
+        // Validate camera object
+        if (!camera || !camera.Id || !camera.Name) {
+            this.error('Invalid camera object:', camera);
+            return;
+        }
+        
+        this.log(`Initializing camera '${camera.Name}' (ID: ${camera.Id})`);
+        
+        try {
+            const imageUrl = await this.createCameraImageURL(camera);
+            
+            if (!imageUrl) {
+                this.error(`No image URL generated for camera '${camera.Name}'`);
+                return;
+            }
+            
+            this.log(`Creating image for camera '${camera.Name}' with URL: ${imageUrl}`);
+            
+            const image = await this.homey.images.createImage();
+            image.setUrl(imageUrl);
+            
+            // Add error handling for setCameraImage
+            try {
+                await this.setCameraImage(camera.Id, camera.Name, image);
+                this.weatherImages[camera.Id] = image;
+                this.log(`Successfully initialized camera '${camera.Name}'`);
+            } catch (setImageError) {
+                this.error(`Failed to set camera image for '${camera.Name}':`, setImageError);
+                // Clean up the created image if setCameraImage fails
                 try {
-                    const imageUrl = await this.createCameraImageURL(camera);
-                    const image = await this.homey.images.createImage();
-                    image.setUrl(imageUrl);
-                    await this.setCameraImage(camera.Id, camera.Name, image);
-                    this.weatherImages[camera.Id] = image;
-                } catch (error) {
-                    this.error(`Failed to initialize camera '${camera.Name}':`, error);
+                    await image.delete();
+                } catch (deleteError) {
+                    this.error(`Failed to delete image for camera '${camera.Name}':`, deleteError);
                 }
             }
         } catch (error) {
-            this.error('Failed to initialize camera images:', error);
+            this.error(`Failed to initialize camera '${camera.Name}':`, error);
         }
     }
 
@@ -163,12 +234,21 @@ class WeatherDevice extends Homey.Device {
         }
 
         // Refresh camera images (URL never changes)
-        for (const image of this.weatherImages) {
-            try {
-                await image.update();
-            } catch (error) {
-                this.error('Failed to update camera image:', error);
+        if (this.weatherImages && Object.keys(this.weatherImages).length > 0) {
+            this.log(`Refreshing ${Object.keys(this.weatherImages).length} camera image(s)`);
+            
+            for (const [cameraId, image] of Object.entries(this.weatherImages)) {
+                try {
+                    await image.update();
+                    this.log(`Successfully updated camera image for ID: ${cameraId}`);
+                } catch (error) {
+                    this.error(`Failed to update camera image for ID ${cameraId}:`, error);
+                    // Optionally remove failed images from the cache
+                    delete this.weatherImages[cameraId];
+                }
             }
+        } else {
+            this.log('No camera images to refresh');
         }
     }
 
@@ -210,6 +290,12 @@ class WeatherDevice extends Homey.Device {
         } catch (error) {
             this.error(`Failed to update capability '${key}':`, error);
         }
+    }
+
+    async retryCameraImages() {
+        this.log('Manually retrying camera image initialization...');
+        this.weatherImages = []; // Clear existing images
+        await this.initializeCameraImages();
     }
 
     onDeleted() {
