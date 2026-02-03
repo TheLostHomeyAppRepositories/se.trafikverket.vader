@@ -7,9 +7,6 @@
   },
   "author": "Richard Barkestam",
   "devDependencies": {
-    "mocha": "^11.7.4"
-  },
-  "dependencies": {
-    "node-fetch": "^3.3.2"
+    "mocha": "^11.7.5"
   }
 }
